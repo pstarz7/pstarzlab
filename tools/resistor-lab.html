@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resistor Lab | Professional Electronics Utility</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Base typography and professional lab aesthetics */
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #f8fafc; /* Tailwind slate-50 */
+            color: #0f172a; /* Tailwind slate-900 */
+        }
+        
+        /* Custom visual for the physical resistor component */
+        .resistor-body {
+            background: linear-gradient(to bottom, #d6d3d1 0%, #e7e5e4 20%, #a8a29e 100%);
+            border-radius: 8px;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.5), inset 0 -4px 6px rgba(0,0,0,0.2), 0 4px 6px -1px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .resistor-wire {
+            background: linear-gradient(to bottom, #94a3b8 0%, #cbd5e1 40%, #64748b 100%);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .resistor-band {
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -4px 6px rgba(0,0,0,0.2);
+            border-left: 1px solid rgba(0,0,0,0.1);
+            border-right: 1px solid rgba(0,0,0,0.1);
+        }
+
+        /* Input styling overrides for a more precise engineering feel */
+        input[type="number"] {
+            font-variant-numeric: tabular-nums;
+        }
+        
+        /* Hide arrows on number inputs */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        /* Focus states */
+        .focus-ring:focus-within {
+            outline: 2px solid #2563eb;
+            outline-offset: -1px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-slate-900 text-white shadow-md">
+        <div class="max-w-5xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                <h1 class="text-xl font-bold tracking-tight">Resistor Lab</h1>
+            </div>
+            <div class="text-xs text-slate-400 font-mono">v1.0.0</div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="bg-slate-800 border-b border-slate-700">
+        <div class="max-w-5xl mx-auto px-4 md:px-6 flex">
+            <button id="tab-btn-led" class="px-6 py-3 text-sm font-medium text-white border-b-2 border-blue-400 bg-slate-700/50 hover:bg-slate-700 transition-colors" onclick="switchTab('led')">
+                LED Resistor Calculator
+            </button>
+            <button id="tab-btn-color" class="px-6 py-3 text-sm font-medium text-slate-300 border-b-2 border-transparent hover:text-white hover:bg-slate-700/50 transition-colors" onclick="switchTab('color')">
+                Color Code Calculator
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Workspace -->
+    <main class="flex-grow max-w-5xl mx-auto w-full px-4 md:px-6 py-8">
+        
+        <!-- ========================================== -->
+        <!-- TOOL A: LED RESISTOR CALCULATOR            -->
+        <!-- ========================================== -->
+        <section id="tool-led" class="block space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Inputs Panel -->
+                <div class="lg:col-span-5 bg-white border border-slate-200 rounded-lg shadow-sm p-5 h-min">
+                    <div class="flex justify-between items-center mb-5">
+                        <h2 class="text-lg font-semibold text-slate-800">Circuit Parameters</h2>
+                        <button onclick="LEDCalculator.reset()" class="text-sm text-slate-500 hover:text-slate-800 underline decoration-slate-300 underline-offset-2">Reset</button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- Vs Input -->
+                        <div>
+                            <label for="led-vs" class="block text-sm font-medium text-slate-700 mb-1">Supply Voltage (V<sub>s</sub>)</label>
+                            <div class="flex focus-ring bg-slate-50 border border-slate-300 rounded overflow-hidden">
+                                <input type="number" id="led-vs" value="9" step="0.1" min="0.1" class="w-full bg-transparent px-3 py-2 text-slate-900 focus:outline-none" placeholder="e.g. 9">
+                                <span class="bg-slate-100 border-l border-slate-300 px-3 py-2 text-slate-500 font-mono text-sm select-none">V</span>
+                            </div>
+                        </div>
+
+                        <!-- Vf Input -->
+                        <div>
+                            <label for="led-vf" class="block text-sm font-medium text-slate-700 mb-1">LED Forward Voltage (V<sub>f</sub>)</label>
+                            <div class="flex focus-ring bg-slate-50 border border-slate-300 rounded overflow-hidden">
+                                <input type="number" id="led-vf" value="3" step="0.1" min="0.1" class="w-full bg-transparent px-3 py-2 text-slate-900 focus:outline-none" placeholder="e.g. 3">
+                                <span class="bg-slate-100 border-l border-slate-300 px-3 py-2 text-slate-500 font-mono text-sm select-none">V</span>
+                            </div>
+                        </div>
+
+                        <!-- I Input -->
+                        <div>
+                            <label for="led-i" class="block text-sm font-medium text-slate-700 mb-1">Target Current (I)</label>
+                            <div class="flex focus-ring bg-slate-50 border border-slate-300 rounded overflow-hidden">
+                                <input type="number" id="led-i" value="20" step="1" min="1" class="w-full bg-transparent px-3 py-2 text-slate-900 focus:outline-none" placeholder="e.g. 20">
+                                <span class="bg-slate-100 border-l border-slate-300 px-3 py-2 text-slate-500 font-mono text-sm select-none">mA</span>
+                            </div>
+                        </div>
+
+                        <!-- Standard Series -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Standard Resistor Series</label>
+                            <div class="flex gap-4">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="led-series" value="E12" class="w-4 h-4 text-blue-600 focus:ring-blue-500" checked>
+                                    <span class="text-sm text-slate-700">E12 (10%)</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="led-series" value="E24" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+                                    <span class="text-sm text-slate-700">E24 (5%)</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Panel -->
+                <div class="lg:col-span-7 space-y-6">
+                    
+                    <!-- Alert Banner -->
+                    <div id="led-alert" class="hidden bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm" aria-live="polite">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-red-800" id="led-alert-title">Invalid Parameters</h3>
+                                <div class="mt-1 text-sm text-red-700" id="led-alert-msg"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Result Cards -->
+                    <div id="led-results" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        
+                        <div class="bg-white border border-slate-200 rounded-lg p-5 shadow-sm">
+                            <div class="text-sm font-medium text-slate-500 mb-1">Theoretical Resistance</div>
+                            <div class="text-3xl font-bold text-slate-900 font-mono tracking-tight" id="led-out-r-th">-- Ω</div>
+                            <div class="mt-3 text-xs text-slate-500 bg-slate-50 p-2 rounded border border-slate-100 font-mono">
+                                R = (<span id="led-eqn-vs">9</span> - <span id="led-eqn-vf">3</span>) / <span id="led-eqn-i">0.020</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-5 shadow-sm relative overflow-hidden">
+                            <div class="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-bl uppercase">Recommended</div>
+                            <div class="text-sm font-medium text-blue-800 mb-1">Standard Resistor (<span id="led-out-series">E12</span>)</div>
+                            <div class="text-3xl font-bold text-blue-900 font-mono tracking-tight" id="led-out-r-std">-- Ω</div>
+                            <div class="mt-3 text-xs text-blue-700 leading-tight">Next standard value equal to or greater than theoretical to protect the LED.</div>
+                        </div>
+
+                        <div class="bg-white border border-slate-200 rounded-lg p-5 shadow-sm">
+                            <div class="text-sm font-medium text-slate-500 mb-1">Actual Current</div>
+                            <div class="text-2xl font-bold text-slate-900 font-mono" id="led-out-i-act">-- mA</div>
+                            <div class="mt-1 text-xs text-slate-500 font-mono">Using standard resistor</div>
+                        </div>
+
+                        <div class="bg-white border border-slate-200 rounded-lg p-5 shadow-sm">
+                            <div class="text-sm font-medium text-slate-500 mb-1">Power Dissipation</div>
+                            <div class="text-2xl font-bold text-slate-900 font-mono" id="led-out-power">-- W</div>
+                            <div class="mt-1 text-xs text-slate-700 font-medium">Rec. Rating: <span class="font-mono bg-slate-100 px-1 border border-slate-200 rounded" id="led-out-wattage">-- W</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Circuit Schematic -->
+                    <div class="bg-white border border-slate-200 rounded-lg p-5 shadow-sm flex items-center justify-center py-8">
+                        <svg width="300" height="120" viewBox="0 0 300 120" class="text-slate-800" stroke="currentColor" fill="none" stroke-width="2">
+                            <!-- Battery -->
+                            <path d="M40 30 v60 M50 40 v40 M40 60 h-20 v-40 h260 v40" />
+                            <text x="15" y="64" font-family="monospace" font-size="12" stroke="none" fill="currentColor">Vs</text>
+                            
+                            <!-- Resistor -->
+                            <path d="M280 60 h-10 l-3-8 l-6 16 l-6-16 l-6 16 l-6-16 l-6 16 l-3-8 h-10" />
+                            <text x="230" y="45" font-family="monospace" font-size="12" stroke="none" fill="currentColor">R (Series)</text>
+
+                            <!-- LED -->
+                            <path d="M160 60 h-20 M140 50 v20 M140 60 l-20-10 v20 z M120 60 h-100" />
+                            <path d="M125 45 l-10-10 m2 0 l8 2 l-2-8" />
+                            <path d="M135 45 l-10-10 m2 0 l8 2 l-2-8" />
+                            <text x="125" y="90" font-family="monospace" font-size="12" stroke="none" fill="currentColor">LED (Vf)</text>
+                        </svg>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TOOL B: COLOR CODE CALCULATOR              -->
+        <!-- ========================================== -->
+        <section id="tool-color" class="hidden space-y-6">
+            
+            <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-6 max-w-3xl mx-auto">
+                
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                    <h2 class="text-lg font-semibold text-slate-800">Resistor Decoder</h2>
+                    
+                    <!-- Band Selector -->
+                    <div class="inline-flex bg-slate-100 p-1 rounded-md border border-slate-200">
+                        <button class="band-btn px-4 py-1.5 text-sm font-medium rounded text-slate-500 hover:text-slate-900 transition-colors" data-bands="4">4-Band</button>
+                        <button class="band-btn px-4 py-1.5 text-sm font-medium rounded bg-white shadow text-slate-900" data-bands="5">5-Band</button>
+                        <button class="band-btn px-4 py-1.5 text-sm font-medium rounded text-slate-500 hover:text-slate-900 transition-colors" data-bands="6">6-Band</button>
+                    </div>
+                </div>
+
+                <!-- Visual Resistor Diagram -->
+                <div class="py-12 flex justify-center items-center overflow-x-auto">
+                    <div class="flex items-center min-w-[300px]">
+                        <div class="resistor-wire w-12 h-2"></div>
+                        <div class="resistor-body w-64 h-16 flex items-center justify-around px-4" id="visual-resistor">
+                            <!-- Bands injected via JS -->
+                        </div>
+                        <div class="resistor-wire w-12 h-2"></div>
+                    </div>
+                </div>
+
+                <!-- Input Controls -->
+                <div id="color-controls" class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+                    <!-- Selects injected via JS to ensure logic adherence -->
+                </div>
+
+                <!-- Results Box -->
+                <div class="bg-slate-900 text-white rounded-lg p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-md border border-slate-800">
+                    <div>
+                        <div class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Nominal Resistance</div>
+                        <div class="text-4xl font-mono font-bold tracking-tight" id="cc-out-val">0 Ω</div>
+                    </div>
+                    <div class="flex-grow flex gap-6 md:justify-end">
+                        <div>
+                            <div class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Tolerance</div>
+                            <div class="text-xl font-mono" id="cc-out-tol">±0%</div>
+                        </div>
+                        <div id="cc-out-tempco-container" class="hidden">
+                            <div class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Temp. Coeff</div>
+                            <div class="text-xl font-mono"><span id="cc-out-tempco">--</span> <span class="text-sm">ppm/K</span></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-3 text-center">
+                    <span class="text-sm text-slate-500">Expected Range: <strong class="font-mono text-slate-700" id="cc-out-range">-- Ω to -- Ω</strong></span>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JavaScript Logic -->
+    <script>
+        /**
+         * ==========================================
+         * CORE DATA STRUCTURES
+         * ==========================================
+         */
+        const DATA = {
+            E12: [1.0, 1.2, 1.5, 1.8, 2.2, 2.7, 3.3, 3.9, 4.7, 5.6, 6.8, 8.2],
+            E24: [1.0, 1.1, 1.2, 1.3, 1.5, 1.6, 1.8, 2.0, 2.2, 2.4, 2.7, 3.0, 3.3, 3.6, 3.9, 4.3, 4.7, 5.1, 5.6, 6.2, 6.8, 7.5, 8.2, 9.1],
+            WATTAGE: [0.125, 0.25, 0.5, 1, 2, 3, 5, 10, 20],
+            
+            // Color mapping arrays for UI generation and logic
+            COLORS: [
+                { id: 'black',  name: 'Black',  hex: '#1e293b', digit: 0, mult: 1, tol: null, temp: 250 },
+                { id: 'brown',  name: 'Brown',  hex: '#78350f', digit: 1, mult: 10, tol: 1, temp: 100 },
+                { id: 'red',    name: 'Red',    hex: '#dc2626', digit: 2, mult: 100, tol: 2, temp: 50 },
+                { id: 'orange', name: 'Orange', hex: '#f97316', digit: 3, mult: 1000, tol: null, temp: 15 },
+                { id: 'yellow', name: 'Yellow', hex: '#eab308', digit: 4, mult: 10000, tol: null, temp: 25 },
+                { id: 'green',  name: 'Green',  hex: '#16a34a', digit: 5, mult: 100000, tol: 0.5, temp: null },
+                { id: 'blue',   name: 'Blue',   hex: '#2563eb', digit: 6, mult: 1000000, tol: 0.25, temp: 10 },
+                { id: 'violet', name: 'Violet', hex: '#9333ea', digit: 7, mult: 10000000, tol: 0.1, temp: 5 },
+                { id: 'gray',   name: 'Gray',   hex: '#64748b', digit: 8, mult: 100000000, tol: 0.05, temp: null },
+                { id: 'white',  name: 'White',  hex: '#f8fafc', digit: 9, mult: 1000000000, tol: null, temp: null },
+                { id: 'gold',   name: 'Gold',   hex: '#eab308', digit: null, mult: 0.1, tol: 5, temp: null },
+                { id: 'silver', name: 'Silver', hex: '#cbd5e1', digit: null, mult: 0.01, tol: 10, temp: null }
+            ]
+        };
+
+        /**
+         * ==========================================
+         * UTILITY FUNCTIONS
+         * ==========================================
+         */
+        const Utils = {
+            formatResistance(ohms) {
+                if (ohms >= 1e6) return +(ohms / 1e6).toFixed(3) + ' MΩ';
+                if (ohms >= 1e3) return +(ohms / 1e3).toFixed(3) + ' kΩ';
+                return +(ohms).toFixed(2) + ' Ω';
+            },
+            
+            getStandardResistor(targetOhms, seriesName) {
+                if (targetOhms <= 0) return 0;
+                const arr = DATA[seriesName];
+                const exponent = Math.floor(Math.log10(targetOhms));
+                const multiplier = Math.pow(10, exponent);
+                const normalized = targetOhms / multiplier;
+                
+                // Deal with floating point inaccuracies (e.g. 3.2999999999 vs 3.3)
+                const EPSILON = 1e-6;
+                let found = arr.find(val => val >= normalized - EPSILON);
+                
+                if (found !== undefined) {
+                    return parseFloat((found * multiplier).toPrecision(4));
+                }
+                // If larger than highest element, wrap to next decade
+                return parseFloat((arr[0] * multiplier * 10).toPrecision(4));
+            },
+
+            getRecommendedWattage(actualPower) {
+                const target = actualPower * 2;
+                const found = DATA.WATTAGE.find(w => w >= target);
+                return found || '> 20';
+            },
+
+            DOM: {
+                id: (id) => document.getElementById(id),
+                val: (id) => parseFloat(document.getElementById(id).value),
+                text: (id, txt) => document.getElementById(id).textContent = txt
+            }
+        };
+
+        /**
+         * ==========================================
+         * TOOL A: LED CALCULATOR LOGIC
+         * ==========================================
+         */
+        const LEDCalculator = {
+            init() {
+                const inputs = ['led-vs', 'led-vf', 'led-i'];
+                inputs.forEach(id => Utils.DOM.id(id).addEventListener('input', () => this.calculate()));
+                document.querySelectorAll('input[name="led-series"]').forEach(rad => {
+                    rad.addEventListener('change', () => this.calculate());
+                });
+                this.calculate();
+            },
+
+            reset() {
+                Utils.DOM.id('led-vs').value = 9;
+                Utils.DOM.id('led-vf').value = 3;
+                Utils.DOM.id('led-i').value = 20;
+                document.querySelector('input[name="led-series"][value="E12"]').checked = true;
+                this.calculate();
+            },
+
+            showError(title, msg) {
+                Utils.DOM.id('led-alert').classList.remove('hidden');
+                Utils.DOM.id('led-results').classList.add('opacity-30', 'pointer-events-none');
+                Utils.DOM.text('led-alert-title', title);
+                Utils.DOM.text('led-alert-msg', msg);
+                Utils.DOM.text('led-out-r-th', '-- Ω');
+                Utils.DOM.text('led-out-r-std', '-- Ω');
+                Utils.DOM.text('led-out-i-act', '-- mA');
+                Utils.DOM.text('led-out-power', '-- W');
+                Utils.DOM.text('led-out-wattage', '-- W');
+            },
+
+            hideError() {
+                Utils.DOM.id('led-alert').classList.add('hidden');
+                Utils.DOM.id('led-results').classList.remove('opacity-30', 'pointer-events-none');
+            },
+
+            calculate() {
+                const vs = Utils.DOM.val('led-vs');
+                const vf = Utils.DOM.val('led-vf');
+                const i_mA = Utils.DOM.val('led-i');
+                const series = document.querySelector('input[name="led-series"]:checked').value;
+
+                // 1. Validation
+                if (isNaN(vs) || isNaN(vf) || isNaN(i_mA)) return this.showError('Missing Inputs', 'Please fill all numeric fields.');
+                if (vs <= 0 || vf <= 0 || i_mA <= 0) return this.showError('Invalid Value', 'Voltages and currents must be strictly positive (> 0).');
+                if (vs <= vf) return this.showError('Insufficient Headroom', `Supply voltage (${vs}V) must be greater than LED forward voltage (${vf}V) to allow current flow.`);
+                
+                this.hideError();
+
+                // 2. Math
+                const i_A = i_mA / 1000;
+                const vDrop = vs - vf;
+                const rTh = vDrop / i_A;
+                
+                const rStd = Utils.getStandardResistor(rTh, series);
+                const iAct_A = vDrop / rStd;
+                const iAct_mA = iAct_A * 1000;
+                const pWatts = Math.pow(iAct_A, 2) * rStd; // I^2 * R
+                const pRec = Utils.getRecommendedWattage(pWatts);
+
+                // 3. UI Update
+                Utils.DOM.text('led-eqn-vs', vs);
+                Utils.DOM.text('led-eqn-vf', vf);
+                Utils.DOM.text('led-eqn-i', i_A.toFixed(3));
+                Utils.DOM.text('led-out-series', series);
+                
+                Utils.DOM.text('led-out-r-th', Utils.formatResistance(rTh));
+                Utils.DOM.text('led-out-r-std', Utils.formatResistance(rStd));
+                Utils.DOM.text('led-out-i-act', iAct_mA.toFixed(2) + ' mA');
+                Utils.DOM.text('led-out-power', pWatts.toFixed(3) + ' W');
+                Utils.DOM.text('led-out-wattage', pRec + ' W');
+            }
+        };
+
+        /**
+         * ==========================================
+         * TOOL B: COLOR CODE CALCULATOR LOGIC
+         * ==========================================
+         */
+        const ColorCalculator = {
+            bandCount: 5,
+            state: [],
+
+            init() {
+                // Attach band count toggle listeners
+                document.querySelectorAll('.band-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => this.setBandCount(parseInt(e.target.dataset.bands)));
+                });
+                this.setBandCount(5); // Default to 5-band (Brown, Black, Black, Brown, Brown)
+            },
+
+            setBandCount(count) {
+                this.bandCount = count;
+                
+                // Update button UI
+                document.querySelectorAll('.band-btn').forEach(btn => {
+                    if (parseInt(btn.dataset.bands) === count) {
+                        btn.className = "band-btn px-4 py-1.5 text-sm font-medium rounded bg-white shadow text-slate-900";
+                    } else {
+                        btn.className = "band-btn px-4 py-1.5 text-sm font-medium rounded text-slate-500 hover:text-slate-900 transition-colors";
+                    }
+                });
+
+                // Default states based on typical 1k or 10k resistors
+                if (count === 4) this.state = ['brown', 'black', 'red', 'gold']; // 1k 5%
+                if (count === 5) this.state = ['brown', 'black', 'black', 'brown', 'brown']; // 1k 1%
+                if (count === 6) this.state = ['brown', 'black', 'black', 'brown', 'brown', 'red']; // 1k 1% 50ppm
+
+                this.renderUI();
+                this.calculate();
+            },
+
+            getValidColorsForBand(index) {
+                // Determines which colors are selectable based on band position
+                const isSig = (this.bandCount === 4 && index < 2) || (this.bandCount > 4 && index < 3);
+                const isTol = index === (this.bandCount - (this.bandCount === 6 ? 2 : 1));
+                const isTemp = this.bandCount === 6 && index === 5;
+                // isMult is the rest
+
+                return DATA.COLORS.filter(c => {
+                    if (isSig) return c.digit !== null;
+                    if (isTol) return c.tol !== null;
+                    if (isTemp) return c.temp !== null;
+                    return c.mult !== null;
+                });
+            },
+
+            renderUI() {
+                const controlsContainer = Utils.DOM.id('color-controls');
+                const visualContainer = Utils.DOM.id('visual-resistor');
+                
+                controlsContainer.innerHTML = '';
+                visualContainer.innerHTML = '';
+
+                // Build bands
+                for (let i = 0; i < this.bandCount; i++) {
+                    
+                    // 1. Visual Band
+                    const vBand = document.createElement('div');
+                    vBand.className = 'resistor-band w-3 h-full';
+                    // Extra spacing for multiplier/tolerance gap
+                    if (i === this.bandCount - (this.bandCount === 6 ? 2 : 1)) vBand.classList.add('ml-4');
+                    vBand.id = `vband-${i}`;
+                    visualContainer.appendChild(vBand);
+
+                    // 2. Control Select
+                    const labelStr = this.getBandLabel(i);
+                    const validColors = this.getValidColorsForBand(i);
+                    
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'flex flex-col';
+                    
+                    const label = document.createElement('label');
+                    label.className = 'text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1';
+                    label.textContent = labelStr;
+                    
+                    const select = document.createElement('select');
+                    select.className = 'bg-slate-50 border border-slate-300 text-sm rounded px-2 py-1.5 focus:ring-1 focus:ring-blue-500 focus:outline-none';
+                    select.dataset.index = i;
+                    
+                    validColors.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.id;
+                        opt.textContent = c.name;
+                        if (c.id === this.state[i]) opt.selected = true;
+                        select.appendChild(opt);
+                    });
+
+                    select.addEventListener('change', (e) => {
+                        this.state[i] = e.target.value;
+                        this.calculate();
+                    });
+
+                    wrapper.appendChild(label);
+                    wrapper.appendChild(select);
+                    controlsContainer.appendChild(wrapper);
+                }
+            },
+
+            getBandLabel(index) {
+                if (this.bandCount === 4) {
+                    if (index === 0) return "Band 1 (1st Digit)";
+                    if (index === 1) return "Band 2 (2nd Digit)";
+                    if (index === 2) return "Band 3 (Multiplier)";
+                    if (index === 3) return "Band 4 (Tolerance)";
+                } else if (this.bandCount === 5) {
+                    if (index < 3) return `Band ${index+1} (${index+1} Digit)`;
+                    if (index === 3) return "Band 4 (Multiplier)";
+                    if (index === 4) return "Band 5 (Tolerance)";
+                } else {
+                    if (index < 3) return `Band ${index+1} (${index+1} Digit)`;
+                    if (index === 3) return "Band 4 (Multiplier)";
+                    if (index === 4) return "Band 5 (Tolerance)";
+                    if (index === 5) return "Band 6 (Temp Coeff)";
+                }
+            },
+
+            calculate() {
+                // Update visuals
+                for (let i = 0; i < this.bandCount; i++) {
+                    const colorData = DATA.COLORS.find(c => c.id === this.state[i]);
+                    Utils.DOM.id(`vband-${i}`).style.backgroundColor = colorData.hex;
+                }
+
+                // Calculate Values
+                let digits = 0;
+                let mult = 1;
+                let tol = 0;
+                let temp = null;
+
+                if (this.bandCount === 4) {
+                    digits = (DATA.COLORS.find(c=>c.id===this.state[0]).digit * 10) + 
+                             (DATA.COLORS.find(c=>c.id===this.state[1]).digit);
+                    mult = DATA.COLORS.find(c=>c.id===this.state[2]).mult;
+                    tol = DATA.COLORS.find(c=>c.id===this.state[3]).tol;
+                } else {
+                    digits = (DATA.COLORS.find(c=>c.id===this.state[0]).digit * 100) + 
+                             (DATA.COLORS.find(c=>c.id===this.state[1]).digit * 10) +
+                             (DATA.COLORS.find(c=>c.id===this.state[2]).digit);
+                    mult = DATA.COLORS.find(c=>c.id===this.state[3]).mult;
+                    tol = DATA.COLORS.find(c=>c.id===this.state[4]).tol;
+                    if (this.bandCount === 6) temp = DATA.COLORS.find(c=>c.id===this.state[5]).temp;
+                }
+
+                const nominal = digits * mult;
+                const delta = nominal * (tol / 100);
+                const min = nominal - delta;
+                const max = nominal + delta;
+
+                // Update Output UI
+                Utils.DOM.text('cc-out-val', Utils.formatResistance(nominal));
+                Utils.DOM.text('cc-out-tol', `±${tol}%`);
+                Utils.DOM.text('cc-out-range', `${Utils.formatResistance(min)} to ${Utils.formatResistance(max)}`);
+                
+                if (this.bandCount === 6) {
+                    Utils.DOM.id('cc-out-tempco-container').classList.remove('hidden');
+                    Utils.DOM.text('cc-out-tempco', temp);
+                } else {
+                    Utils.DOM.id('cc-out-tempco-container').classList.add('hidden');
+                }
+            }
+        };
+
+        /**
+         * ==========================================
+         * TAB NAVIGATION
+         * ==========================================
+         */
+        function switchTab(tab) {
+            const btnActive = "px-6 py-3 text-sm font-medium text-white border-b-2 border-blue-400 bg-slate-700/50 hover:bg-slate-700 transition-colors";
+            const btnInactive = "px-6 py-3 text-sm font-medium text-slate-300 border-b-2 border-transparent hover:text-white hover:bg-slate-700/50 transition-colors";
+            
+            if (tab === 'led') {
+                Utils.DOM.id('tool-led').classList.replace('hidden', 'block');
+                Utils.DOM.id('tool-color').classList.replace('block', 'hidden');
+                Utils.DOM.id('tab-btn-led').className = btnActive;
+                Utils.DOM.id('tab-btn-color').className = btnInactive;
+            } else {
+                Utils.DOM.id('tool-color').classList.replace('hidden', 'block');
+                Utils.DOM.id('tool-led').classList.replace('block', 'hidden');
+                Utils.DOM.id('tab-btn-color').className = btnActive;
+                Utils.DOM.id('tab-btn-led').className = btnInactive;
+            }
+        }
+
+        // Initialize Tools
+        document.addEventListener('DOMContentLoaded', () => {
+            LEDCalculator.init();
+            ColorCalculator.init();
+        });
+
+    </script>
+</body>
+</html>
